@@ -1,3 +1,4 @@
-# notes
-notes about tutorials, courses and books
+Notes
+=====
+Notes about tutorials, courses and books
 
