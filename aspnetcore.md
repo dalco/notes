@@ -40,4 +40,4 @@ HTML and CSS Basics
     app.UseStaticFiles();
 }` in Startup.cs (configure of the middleware)
 2. Move the index.html file created in the wwwroot folder
-3. `app.UseDeafultFiles();` before `app.UseStaticFiles();` in Startup.cs
+3. `app.UseDeafultFiles();` before `app.UseStaticFiles();` in Startup
