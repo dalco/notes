@@ -8,7 +8,7 @@ What is ASP.NET Core?
 
 1. Command Prompt -> `cd newprojectfolder`
 2. `dotnet new`
-3. `dotnet restore` (controlla le dependencies di project.json e le scarica da NuGet)
+3. `dotnet restore` (controls the dependencies in project.json and downdload from NuGet)
 4. `dotnet run` (build and run app)
 
 ### Starting a new Web App without Visual Studio
