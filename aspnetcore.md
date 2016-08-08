@@ -40,4 +40,31 @@ HTML and CSS Basics
     app.UseStaticFiles();
 }` in Startup.cs (configure of the middleware)
 2. Move the index.html file created in the wwwroot folder
-3. `app.UseDeafultFiles();` before `app.UseStaticFiles();` in Startup
+3. `app.UseDeafultFiles();` before `app.UseStaticFiles();` in Startup.cs
+
+MVC 6
+-----
+
+### First controller/view
+1.  Create the new _Controllers_ folder
+2.  Create the new _AppController.cs_ MVC Controller Class file inside the folder.
+3.  Add MVC to _project.json_
+4.  Add _Microsoft.AspNetCore.Mvc_ namespace to _AppController.cs_
+5.  Create the new _Views/App_ folder
+6.  Create new _index.cshtml_ file inside the folder
+7.  In _Startup.cs_ _Configure_ delete the _app.UseDefaultFiles()_ method to stop serving index.html file from wwwroot folder
+
+### Enabling MVC 6
+1.  Add _app.UseMvc();_ in _Startup.cs_ to enable MVC
+2.  Add _services.AddMvc();_ in _Startup.cs_ _ConfigureServices_ ASP.NET Core use dependency injection -> we are injecting the MVC service
+3.  Add routes configuration `app.UseMvc(config =>
+                                          {
+                                              config.MapRoute(
+                                                  name: "Default",
+                                                  template: "{controller}/{action}/{id?}",
+                                                  defaults: new { controller = "App", action = "Index" }
+                                              );
+                                          });`
+
+ 
+
