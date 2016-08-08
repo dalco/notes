@@ -50,13 +50,13 @@ MVC 6
 2.  Create the new _AppController.cs_ MVC Controller Class file inside the folder.
 3.  Add MVC to _project.json_
 4.  Add _Microsoft.AspNetCore.Mvc_ namespace to _AppController.cs_
-5.  Create the new _Views/App_ folder
+5.  Create the new _Views/App_ folder. The folder has to match the name of the Controller
 6.  Create new _index.cshtml_ file inside the folder
-7.  In _Startup.cs_ _Configure_ delete the _app.UseDefaultFiles()_ method to stop serving index.html file from wwwroot folder
-
+7.  In _Startup.cs_ _Configure_ delete the `app.UseDefaultFiles()` method to stop serving index.html file from wwwroot folder
+``
 ### Enabling MVC 6
-1.  Add _app.UseMvc();_ in _Startup.cs_ to enable MVC
-2.  Add _services.AddMvc();_ in _Startup.cs_ _ConfigureServices_ ASP.NET Core use dependency injection -> we are injecting the MVC service
+1.  Add _app.UseMvc(); in _Startup.cs_ to enable MVC
+2.  Add `services.AddMvc();` in _Startup.cs_ _ConfigureServices_ ASP.NET Core use dependency injection -> we are injecting the MVC service
 3.  Add routes configuration `app.UseMvc(config =>
                                           {
                                               config.MapRoute(
@@ -65,6 +65,18 @@ MVC 6
                                                   defaults: new { controller = "App", action = "Index" }
                                               );
                                           });`
+                                                                      
+### Creating a layout
+1.  Under _Views_ create the _Shared_ folder
+2.  In _Shared_ folder create a new _MVC view layout page_
+3.  Copy the content of the _index.cshtml_ file and paste it into the new __Layout.cshtml_ file
+4.  In the _index.cshtml_ file keep only the content of for the home page and cut the rest
+5.  Cut the content of the _index.cshtml_ file from the __Layout.cshtml_ file
+6.  Add `@RenderBody()` to __Layout.cshtml_ to render the body of the page
+7.  Under _Views_ create a new _MVC view start page_ to specify the layout page
+
+### Adding more views
+
 
  
 
