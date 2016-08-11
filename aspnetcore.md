@@ -64,7 +64,7 @@ MVC 6
                                                   template: "{controller}/{action}/{id?}",
                                                   defaults: new { controller = "App", action = "Index" }
                                               );
-                                          });`
+                                          });` e.g. {controller}/{action}/{id?} = app/about
                                                                       
 ### Creating a layout
 1.  Under _Views_ create the _Shared_ folder
@@ -76,6 +76,109 @@ MVC 6
 7.  Under _Views_ create a new _MVC view start page_ to specify the layout page
 
 ### Adding more views
+1.  Add a new ` public IActionResult About()
+                       {
+                           return View();
+                       }` in the _AppController.cs_
+2. Add the _cshtml_ file in the _Views/App_ folder whose name match the one of the controller
+3. Add _~/_ before references in order to replace with the actual root
+4. Add `throw new InvalidOperationException("Bad things happen");` to the _contact_ action in _AppController_
+5. Add `app.UseDeveloperExceptionPage();` to _Configure_ in _Startup_
+6. Add `IHostingEnvironment` interface to _Configure_ in _Startup_
+7. Add `if (env.IsEnvironment("Development"))
+                    {
+                        app.UseDeveloperExceptionPage();
+                    }` to _Configure_ in _Startup_ in order to use the _app.UseDeveloperExceptionPage()_ only on _Development_ machine
+                    
+### Using tag helpers
+1.  Replace _href_ with _asp-controller_ and _asp-action_ in __Layout.cshtml_
+2.  Add _Microsoft.AspNetCore.Mvc.TagHelpers_ to _project.json_
+3.  In _Views_ folder add a new _MVC View Imports Page_
+4.  In the new __ViewImports.cshtml_ file add _@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"_ this is going to inject the tag helpers in every view
+
+### Implementing a contact page
+1.  Create a form in _Contact.cshtml_
+2.  Create a new _ViewModels/ContactViewModel_ class with properties in the form
+3.  Add _asp-for_ tag in the form in in _Contact.cshtml_
+4.  Add `@model TheWorld.ViewModels.ContactViewModel` in _Contact.cshtml_
+
+### Using validation
+1.  Add `[Required]` to every property in _ContactViewModel.cs_
+2.  Add _jquery-validation_ and _jquery-validation-unobtrusive_ to _bower.json_
+3.  Add `@section scripts{
+         <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+         <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+         }` in _Contact.cshtml_
+4.  Add `@RenderSection("scripts", false);` after _jquery_ in __Layout.cshtml_ in order to call at this point the _section scripts_ of the point 3 after _jquery_ and only when in _contact_ page
+5.  Add validation messages using `<span asp-validation-for=""></span>` in _Contact.cshtml_
+6.  Add `<span asp-validation-summary="ModelOnly"></span>` at the top of the form in order to show messages that concern the entire form
+
+### Supporting POST
+1.  Add `method="post"` in the _form_ tag
+2.  Add ` [HttpPost]
+                 public IActionResult Contact(ContactViewModel model)
+                 {
+                     return View();
+                 }` action in _AppController.cs_ (remember to add _using TheWorld.ViewModels;_ to use the _ContactViewModel_)
+                 
+### Adding a service
+1.  Create a _Services_ folder in the project 
+2.  Create a new _IMailService.cs_ interface file in the _Services_ folder
+3.  Create the interface: ` public interface IMailService
+         {
+             void SendMail(string to, string from, string subject, string body);
+         }`
+4.  Create a new _DebugMailService.cs_ class file in the _Services_ folder
+5.  Implement the _IMailService_ interface in the _DebugMailService.cs_ class
+6.  Add the _IMailService_ to the _AppController.cs_ `private IMailService _mailService;
+                                                              public AppController(IMailService mailService)
+                                                              {
+                                                                  _mailService = mailService;
+                                                              }`
+7.  Call the __mailService.SendMail_ method in the `[HttpPost]
+                                                                     public IActionResult Contact(ContactViewModel model)`
+8.  In _Startup.cs_ add `private IHostingEnvironment _env;
+                                 public Startup(IHostingEnvironment env)
+                                 {
+                                     _env = env;
+                                 }`
+9.  In _ConfigureServices_ (_Startup.cs_) add `if (_env.IsEnvironment("Development") || _env.IsEnvironment("testing"))
+                                                           {
+                                                               services.AddScoped<IMailService, DebugMailService>();
+                                                           }
+                                                           else {
+                                                               //Implement a real mail service
+                                                           }`
+ 
+### Completing the form
+1.  Create a _config.json_ file in the project 
+2.  Create the `{
+                  "MailSettings": {
+                    "ToAddress":  "federico.dalcolle@gmail.com"
+                  }
+                }` object in _config.json_
+3.  In _Startup.cs_ add `var builder = new ConfigurationBuilder()
+                .SetBasePath(_env.ContentRootPath)
+                .AddJsonFile("config.json");
+_config = builder.Build();` in _Startup_ and `services.AddSingleton(_config);` in _ConfigureServices_
+4.  Inject `IConfigurationRoot config` in _AppController.cs_ and add `_config["MailSettings:ToAddress"]` as first parameter in _mailService.SendMail_
+5.  Custom validation example: add `if (model.Email.Contains("aol.com")) {
+                                                    ModelState.AddModelError("Email", "We don't support AOL addresses");
+                                                }` in _public IActionResult Contact(ContactViewModel model)_ To send the error to the entire object just leave the _field_ parameter empty. E.g. `ModelState.AddModelError("", "We don't support AOL addresses");`
+6.  To show a success message: add `if (ModelState.IsValid)
+                                                {
+                                                    _mailService.SendMail(_config["MailSettings:ToAddress"], model.Email, "From the world", model.Message);
+                                                    ModelState.Clear();
+                                                    ViewBag.UserMessage = "Message sent!";
+                                                }` in _AppController.cs_ and `@if (ViewBag.UserMessage != null)
+                                                                                  {
+                                                                                      <div>@ViewBag.UserMessage</div>
+                                                                                  }` in _Contact.cshtml
+_
+                                          
+
+                 
+
 
 
  
