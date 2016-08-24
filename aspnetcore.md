@@ -173,8 +173,117 @@ _config = builder.Build();` in _Startup_ and `services.AddSingleton(_config);` i
                                                 }` in _AppController.cs_ and `@if (ViewBag.UserMessage != null)
                                                                                   {
                                                                                       <div>@ViewBag.UserMessage</div>
-                                                                                  }` in _Contact.cshtml
-_
+                                                                                  }` in _Contact.cshtml_
+                                                                                  
+Entity Framework Core 1.0
+-------------------------
+
+### Creating entities
+1.  Create a new _Models_ folder
+2. In the _Models_ folder creare a new _Trip.cs_ file ` public class Trip
+                                                           {
+                                                               public int Id { get; set; }
+                                                               public string Name { get; set; }
+                                                               public DateTime DateCreated { get; set; }
+                                                               public string UserName { get; set; }
+                                                               public ICollection<Stop> Stops { get; set; }
+                                                           }`
+3.  And a new _Stop.cs_ file `public class Stop
+                                  {
+                                      public int Id { get; set; }
+                                      public string Name { get; set; }
+                                      public double Latitude { get; set; }
+                                      public double Longitude { get; set; }
+                                      public int Order { get; set; }
+                                      public DateTime Arrival { get; set; }
+                                  }`
+                                  
+### Creating the DbContext
+1.  In the _Models_ folder create a new _WorldContext.cs_ file `public class WorldContext: DbContext
+                                                                    {
+                                                                        public WorldContext()
+                                                                        {}
+                                                                        public DbSet<Trip> Trips { get; set; }
+                                                                        public DbSet<Stop> Stops { get; set; }
+                                                                    }`
+2.  In _Startup.cs_ _ConfigureServices_ add `services.AddDbContext<WorldContext>();` in order to register the Context Class
+
+### Using the DbContext
+1.  Inject the _WorldContext_ in the _AppController_
+2.  Use the _WorldContext_ in the _Index()_ as follow: `public IActionResult Index()
+                                                                {
+                                                                    var data = _context.Trips.ToList();
+                                                                    return View(data);
+                                                                }` in order to ask db for data and show it in the view
+3.  Add the override method to _WorldContext.cs_ `private IConfigurationRoot _config;
+                                                          public WorldContext(IConfigurationRoot config)
+                                                          {
+                                                              _config = config;
+                                                          }
+                                                          protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                                                                  {
+                                                                      base.OnConfiguring(optionsBuilder);
+                                                                      optionsBuilder.UseSqlServer(_config[""]);
+                                                                  }`
+4. To the _config.json_ add `"ConnectionStrings": {
+                                 "WorldContextConnection":  "Server=(localdb)\\MSSQLLocalDb;Trusted_Connection=true;MultipleActiveResultSets=true"
+                               }`
+5.  Modify _WorldContext.cs_ to `optionsBuilder.UseSqlServer(_config["ConnectionStrings:WorldContextConnection"]);` and inject _DbContextOptions_
+
+### Using Migrations
+1.  Add ` "Microsoft.EntityFrameworkCore.Tools": {
+               "version": "1.0.0-preview2-final",
+               "type": "build"
+             },` to _project.json_
+2.  Open the Administrator console and digit the command _dotnet ef_
+3.  Digit the command _dotnet ef migrations add InitialDatabase_
+4.  Digit the command _dotnet ef database update_
+
+### Seeding the database
+1.  In _Models_ create the new class _WorldContextSeedData_
+2. In _WorldContextSeedData_ add `private WorldContext _context;
+                                          public WorldContextSeedData(WorldContext context)
+                                          {
+                                              _context = context;
+                                          }
+                                          public async Task EnsureSeedData() {
+                                              if (!_context.Trips.Any())
+                                              {
+                                                  var usTrip = new Trip()
+                                                  {
+                                                      DateCreated = DateTime.UtcNow,
+                                                      Name = "US trip",
+                                                      UserName = "",
+                                                      Stops = new List<Stop>()
+                                                      {
+                                                          new Stop() { Order = 1, Latitude = 27.700000, Longitude = 85.333333, Name = "Atlanta" } 
+                                                      }
+                                                  };
+                                                     _context.Trips.Add(usTrip);
+                                                  _context.Stops.AddRange(usTrip.Stops);
+                                                  var worldTrip = new Trip()
+                                                  {
+                                                      DateCreated = DateTime.UtcNow,
+                                                      Name = "World trip",
+                                                      UserName = "",
+                                                      Stops = new List<Stop>()
+                                                      {
+                                                           new Stop() { Order = 1, Latitude = 27.700000, Longitude = 85.333333, Name = "Atlanta" }
+                                                      }
+                                                  };
+                                                  _context.Trips.Add(worldTrip);
+                                                  _context.Stops.AddRange(worldTrip.Stops);
+                                                  await _context.SaveChangesAsync();
+                                              }
+                                          }
+                                      }`
+                                      
+3.  Add `services.AddTransient<WorldContextSeedData>();` in _Startup.cs_ _ConfigureServices_
+4.  Inject _WorldContextSeedData seeder_ in _Configure_
+5.  Add `seeder.EnsureSeedData.Wait();` in _Configure_
+
+
+                                        
                                           
 
                  
